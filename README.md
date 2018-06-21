@@ -2,13 +2,7 @@
 
 Richardson's Neural Networks Class
 
-Purpose: Store and play with code.
 The midterm supplies 4 NN models: Perceptron, Logistic, SVM, Decision Tree.
-Pros and Cons:
-Perceptron:
-Logistic: 
-SVM:
-Decision Tree:
 
 ## The Midterm Construction:
 1. Preprocessing code (reading-in, cross-validation i.e. the 70-30 split, and normalization of the data). Complete.
