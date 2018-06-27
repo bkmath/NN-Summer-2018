@@ -9,7 +9,6 @@ Final Project: Make a Friend. Reddit-Chatbot.
 2. Code that buffers data into highly rated comment-reply. Perhaps thread-reply from askreddit, changemyview, or something.
 3. Study RNN for Neural-Translation Machines (provided by google).
 
-The midterm supplies 4 NN models: Perceptron, Logistic, SVM, Decision Tree.
 
 ## The Midterm Construction:
 1. Preprocessing code (reading-in, cross-validation i.e. the 70-30 split, and normalization of the data). Complete.
