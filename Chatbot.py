@@ -3,12 +3,12 @@ import json
 from datetime import datetime
 import time
 
-timeframe = '2017-03'
+timeframe = '2015-01'
 sql_transaction = []
 start_row = 0
 cleanup = 1000000
 
-connection = sqlite3.connect('{}.db'.format(timeframe))
+connection = sqlite3.connect('2015-01.db'.format(timeframe))
 c = connection.cursor()
 
 def create_table():
@@ -88,13 +88,15 @@ def find_existing_score(pid):
         #print(str(e))
         return False
     
+filename = '/mnt/37fb2296-7e51-4031-8d1f-ab682c7814f1/Reddit Data Set/RC_'+timeframe
+
 if __name__ == '__main__':
     create_table()
     row_counter = 0
     paired_rows = 0
 
     #with open('J:/chatdata/reddit_data/{}/RC_{}'.format(timeframe.split('-')[0],timeframe), buffering=1000) as f:
-    with open('/home/paperspace/reddit_comment_dumps/RC_{}'.format(timeframe), buffering=1000) as f:
+    with open(filename.format(timeframe), buffering=1000) as f:
         for row in f:
             #print(row)
             #time.sleep(555)
@@ -141,3 +143,52 @@ if __name__ == '__main__':
                     connection.commit()
                     c.execute("VACUUM")
                     connection.commit()
+                    
+                    
+##################
+"""
+The first line just establishes our connection, then we define the cursor, then the limit. The limit is the size of chunk that we're going to pull at a time from the database. Again, we're working with data that is plausibly much larger than the RAM we have. We want to set limit to 5000 for now, so we can have some testing data. We can raise that later. We'll use the last_unix to help us make pulls from the database, cur_length will tell us when we're done, counter will allow us to show some debugging information, and test_done for when we're done building testing data.
+"""
+import sqlite3
+import pandas as pd
+
+timeframes = ['2015-01']
+
+for timeframe in timeframes:
+    connection = sqlite3.connect('{}.db'.format(timeframe))
+    c = connection.cursor()
+    limit = 5000
+    last_unix = 0
+    cur_length = limit
+    counter = 0
+    test_done = False
+
+    while cur_length == limit:
+
+        df = pd.read_sql("SELECT * FROM parent_reply WHERE unix > {} and parent NOT NULL and score > 0 ORDER BY unix ASC LIMIT {}".format(last_unix,limit),connection)
+        last_unix = df.tail(1)['unix'].values[0]
+        cur_length = len(df)
+
+        if not test_done:
+            with open('test.from','a', encoding='utf8') as f:
+                for content in df['parent'].values:
+                    f.write(content+'\n')
+
+            with open('test.to','a', encoding='utf8') as f:
+                for content in df['comment'].values:
+                    f.write(str(content)+'\n')
+
+            test_done = True
+
+        else:
+            with open('train.from','a', encoding='utf8') as f:
+                for content in df['parent'].values:
+                    f.write(content+'\n')
+
+            with open('train.to','a', encoding='utf8') as f:
+                for content in df['comment'].values:
+                    f.write(str(content)+'\n')
+
+        counter += 1
+        if counter % 20 == 0:
+            print(counter*limit,'rows completed so far')
