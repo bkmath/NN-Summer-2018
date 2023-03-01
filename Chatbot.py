@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 import time
 import sys
+import path from os
 
 timeframe = '2015-01'
 sql_transaction = []
@@ -88,11 +89,16 @@ def find_parentCommentOrScore(pid, parentCommentOrScore):
 filename = sys.argv[0] + timeframe
 
 if __name__ == '__main__':
+    
+    fileExists = path.exists(filename)
+    if(!fileExists)
+        raise Exception("file: " + filename + " does not exist.")
     create_table()
     row_counter = 0
     paired_rows = 0
 
     #with open('J:/chatdata/reddit_data/{}/RC_{}'.format(timeframe.split('-')[0],timeframe), buffering=1000) as f:
+    
     with open(filename.format(timeframe), buffering=1000) as f:
         for row in f:
             #print(row)
