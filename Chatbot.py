@@ -2,6 +2,7 @@ import sqlite3
 import json
 from datetime import datetime
 import time
+import sys
 
 timeframe = '2015-01'
 sql_transaction = []
@@ -64,31 +65,27 @@ def acceptable(data):
     else:
         return True
 
-def find_parent(pid):
+def find_parentCommentOrScore(pid, parentCommentOrScore):
     try:
-        sql = "SELECT comment FROM parent_reply WHERE comment_id = '{}' LIMIT 1".format(pid)
+        nonlocal sql
+        match parentCommentOrScore:
+            case "parent":
+                sql = "SELECT comment FROM parent_reply WHERE comment_id = '{}' LIMIT 1".format(pid)
+            case "score":
+                sql = "SELECT score FROM parent_reply WHERE parent_id = '{}' LIMIT 1".format(pid)
+            case _:
+                raise Exception("neither parent or score given")
         c.execute(sql)
         result = c.fetchone()
-        if result != None:
-            return result[0]
-        else: return False
+        match result:
+            case None:
+                return result[0]
+            case _: 
+                return False
     except Exception as e:
-        #print(str(e))
-        return False
-
-def find_existing_score(pid):
-    try:
-        sql = "SELECT score FROM parent_reply WHERE parent_id = '{}' LIMIT 1".format(pid)
-        c.execute(sql)
-        result = c.fetchone()
-        if result != None:
-            return result[0]
-        else: return False
-    except Exception as e:
-        #print(str(e))
-        return False
-    
-filename = '/mnt/37fb2296-7e51-4031-8d1f-ab682c7814f1/Reddit Data Set/RC_'+timeframe
+        raise e
+        
+filename = sys.argv[0] + timeframe
 
 if __name__ == '__main__':
     create_table()
@@ -113,9 +110,9 @@ if __name__ == '__main__':
                     comment_id = row['id']
                     
                     subreddit = row['subreddit']
-                    parent_data = find_parent(parent_id)
+                    parent_data = find_parentCommentOrScore(parent_id, "parent")
                     
-                    existing_comment_score = find_existing_score(parent_id)
+                    existing_comment_score = find_parentCommentOrScore(parent_id, "score")
                     if existing_comment_score:
                         if score > existing_comment_score:
                             if acceptable(body):
@@ -143,6 +140,9 @@ if __name__ == '__main__':
                     connection.commit()
                     c.execute("VACUUM")
                     connection.commit()
+    c.clear()
+    c.close()
+    connection.close()
                     
                     
 ##################
@@ -192,3 +192,6 @@ for timeframe in timeframes:
         counter += 1
         if counter % 20 == 0:
             print(counter*limit,'rows completed so far')
+    c.clear()
+    c.close()
+    connection.close()
