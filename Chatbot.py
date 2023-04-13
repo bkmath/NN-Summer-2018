@@ -158,7 +158,7 @@ The first line just establishes our connection, then we define the cursor, then 
 import sqlite3
 import pandas as pd
 
-timeframes = ['2015-01']
+timeframes = [timeframe]
 
 for timeframe in timeframes:
     connection = sqlite3.connect('{}.db'.format(timeframe))
